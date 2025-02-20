@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { PlusCircle, ListTodo } from 'lucide-react';
 import { Todo } from './types';
 import { TodoItem } from './components/TodoItem';
-import { toast, ToastContainer } from 'react-toastify'; // Import toast
-import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const BASE_URL = 'http://localhost:5000'; // Assuming your backend runs on port 5000
 
@@ -31,16 +31,16 @@ function App() {
       toast.warning('Todo cannot be empty!', { position: 'top-right' });
       return;
     }
-
+  
     try {
       const response = await fetch(`${BASE_URL}/api/todos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: newTodo }),
       });
-
+  
       if (!response.ok) throw new Error('Failed to add todo');
-
+  
       const addedTodo = await response.json();
       setTodos([...todos, addedTodo]);
       setNewTodo('');
@@ -49,11 +49,10 @@ function App() {
       toast.error('Error adding todo!', { position: 'top-right' });
     }
   };
+  
 
   // Delete a todo
   const deleteTodo = async (id: string) => {
-    console.log("Deleting todo with ID:", id); // Debugging log
-  
     if (!id) {
       toast.error("Invalid Todo ID!", { position: "top-right" });
       return;
@@ -66,18 +65,19 @@ function App() {
   
       if (!response.ok) throw new Error("Failed to delete todo");
   
-      setTodos(todos.filter((todo) => todo._id !== id)); // Changed from todo.id to todo._id
+      setTodos(todos.filter((todo) => todo._id !== id)); // Ensure you're using _id here
       toast.success("Todo deleted successfully!", { position: "top-right" });
     } catch (error) {
       console.error("Error deleting todo:", error);
       toast.error("Error deleting todo!", { position: "top-right" });
     }
   };
+  
 
   // Toggle todo completion status
   const toggleTodo = async (id: string) => {
     try {
-      const todoToUpdate = todos.find((todo) => todo._id === id); // Changed from todo.id to todo._id
+      const todoToUpdate = todos.find((todo) => todo._id === id);
       if (!todoToUpdate) throw new Error('Todo not found');
 
       const updatedTodo = { ...todoToUpdate, completed: !todoToUpdate.completed };
@@ -89,7 +89,25 @@ function App() {
 
       if (!response.ok) throw new Error('Failed to update todo');
 
-      setTodos(todos.map((todo) => (todo._id === id ? updatedTodo : todo))); // Changed from todo.id to todo._id
+      setTodos(todos.map((todo) => (todo._id === id ? updatedTodo : todo)));
+      toast.success('Todo updated successfully!', { position: 'top-right' });
+    } catch (error) {
+      toast.error('Error updating todo!', { position: 'top-right' });
+    }
+  };
+
+  // Handle updating text and priority in the Todo
+  const onSave = async (id: string, updatedTodo: Partial<Todo>) => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/todos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTodo),
+      });
+
+      if (!response.ok) throw new Error('Failed to update todo');
+
+      setTodos(todos.map((todo) => (todo._id === id ? { ...todo, ...updatedTodo } : todo)));
       toast.success('Todo updated successfully!', { position: 'top-right' });
     } catch (error) {
       toast.error('Error updating todo!', { position: 'top-right' });
@@ -173,10 +191,11 @@ function App() {
               <div className="space-y-1 p-4">
                 {filteredTodos.map((todo) => (
                   <TodoItem
-                    key={todo._id} // Changed from todo.id to todo._id
+                    key={todo._id} // Use _id as the key
                     todo={todo}
                     onToggle={toggleTodo}
                     onDelete={deleteTodo}
+                    onSave={onSave} // Pass onSave for editing the todo
                   />
                 ))}
               </div>
