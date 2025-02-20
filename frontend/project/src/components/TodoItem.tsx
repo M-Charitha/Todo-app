@@ -34,7 +34,7 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
         <h3 className={`text-sm font-medium ${
           todo.completed ? 'text-gray-500 line-through' : 'text-gray-900'
         }`}>
-          {todo.title}
+          {todo.text}
         </h3>
         
         <div className="mt-1 flex items-center gap-2">
